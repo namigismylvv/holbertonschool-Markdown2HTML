@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Markdown to HTML converter — headings only
+Markdown to HTML converter — headings + unordered lists
 """
 
 import sys
@@ -8,10 +8,15 @@ import os
 
 def markdown_to_html(text):
     html_lines = []
+    in_list = False  
 
     for line in text.split('\n'):
         line = line.strip()
         if line.startswith('#'):
+            if in_list:
+                html_lines.append("</ul>")
+                in_list = False
+
             count = 0
             for char in line:
                 if char == '#':
@@ -20,10 +25,24 @@ def markdown_to_html(text):
                     break
             content = line[count:].strip()
             html_lines.append(f"<h{count}>{content}</h{count}>")
+
+        elif line.startswith('- '):
+            if not in_list:
+                html_lines.append("<ul>")
+                in_list = True
+            content = line[2:].strip()
+            html_lines.append(f"<li>{content}</li>")
+
         else:
-            pass  
+            if in_list:
+                html_lines.append("</ul>")
+                in_list = False
+
+    if in_list:
+        html_lines.append("</ul>")
 
     return '\n'.join(html_lines)
+
 
 def main():
     if len(sys.argv) < 3:
@@ -46,6 +65,7 @@ def main():
         f.write(html_content)
 
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
