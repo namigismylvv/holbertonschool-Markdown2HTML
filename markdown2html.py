@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Markdown to HTML converter — headings + unordered lists
+Markdown to HTML converter — headings + unordered and ordered lists
 """
 
 import sys
@@ -8,14 +8,18 @@ import os
 
 def markdown_to_html(text):
     html_lines = []
-    in_list = False  
+    in_ul = False   
+    in_ol = False   
 
     for line in text.split('\n'):
         line = line.strip()
         if line.startswith('#'):
-            if in_list:
+            if in_ul:
                 html_lines.append("</ul>")
-                in_list = False
+                in_ul = False
+            if in_ol:
+                html_lines.append("</ol>")
+                in_ol = False
 
             count = 0
             for char in line:
@@ -27,19 +31,37 @@ def markdown_to_html(text):
             html_lines.append(f"<h{count}>{content}</h{count}>")
 
         elif line.startswith('- '):
-            if not in_list:
+            if in_ol:
+                html_lines.append("</ol>")
+                in_ol = False
+            if not in_ul:
                 html_lines.append("<ul>")
-                in_list = True
+                in_ul = True
+            content = line[2:].strip()
+            html_lines.append(f"<li>{content}</li>")
+
+        elif line.startswith('* '):
+            if in_ul:
+                html_lines.append("</ul>")
+                in_ul = False
+            if not in_ol:
+                html_lines.append("<ol>")
+                in_ol = True
             content = line[2:].strip()
             html_lines.append(f"<li>{content}</li>")
 
         else:
-            if in_list:
+            if in_ul:
                 html_lines.append("</ul>")
-                in_list = False
+                in_ul = False
+            if in_ol:
+                html_lines.append("</ol>")
+                in_ol = False
 
-    if in_list:
+    if in_ul:
         html_lines.append("</ul>")
+    if in_ol:
+        html_lines.append("</ol>")
 
     return '\n'.join(html_lines)
 
