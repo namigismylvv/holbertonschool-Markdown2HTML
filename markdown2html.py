@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Markdown to HTML converter — headings + unordered and ordered lists
+Markdown to HTML converter — headings, unordered & ordered lists, paragraphs
 """
 
 import sys
@@ -8,47 +8,94 @@ import os
 
 def markdown_to_html(text):
     html_lines = []
-    in_ul = False   
-    in_ol = False   
+    in_ul = False
+    in_ol = False
+    in_paragraph = False
+    paragraph_lines = []
 
     for line in text.split('\n'):
-        line = line.strip()
-        if line.startswith('#'):
+        stripped = line.strip()
+
+        if stripped.startswith('#'):
             if in_ul:
                 html_lines.append("</ul>")
                 in_ul = False
             if in_ol:
                 html_lines.append("</ol>")
                 in_ol = False
+            if in_paragraph:
+                html_lines.append("<p>")
+                html_lines.extend(
+                    paragraph_lines[0:1] +
+                    [f"<br/>{l}" for l in paragraph_lines[1:]]
+                )
+                html_lines.append("</p>")
+                paragraph_lines = []
+                in_paragraph = False
 
             count = 0
-            for char in line:
+            for char in stripped:
                 if char == '#':
                     count += 1
                 else:
                     break
-            content = line[count:].strip()
+            content = stripped[count:].strip()
             html_lines.append(f"<h{count}>{content}</h{count}>")
 
-        elif line.startswith('- '):
+        elif stripped.startswith('- '):
             if in_ol:
                 html_lines.append("</ol>")
                 in_ol = False
+            if in_paragraph:
+                html_lines.append("<p>")
+                html_lines.extend(
+                    paragraph_lines[0:1] +
+                    [f"<br/>{l}" for l in paragraph_lines[1:]]
+                )
+                html_lines.append("</p>")
+                paragraph_lines = []
+                in_paragraph = False
             if not in_ul:
                 html_lines.append("<ul>")
                 in_ul = True
-            content = line[2:].strip()
+            content = stripped[2:].strip()
             html_lines.append(f"<li>{content}</li>")
 
-        elif line.startswith('* '):
+        elif stripped.startswith('* '):
             if in_ul:
                 html_lines.append("</ul>")
                 in_ul = False
+            if in_paragraph:
+                html_lines.append("<p>")
+                html_lines.extend(
+                    paragraph_lines[0:1] +
+                    [f"<br/>{l}" for l in paragraph_lines[1:]]
+                )
+                html_lines.append("</p>")
+                paragraph_lines = []
+                in_paragraph = False
             if not in_ol:
                 html_lines.append("<ol>")
                 in_ol = True
-            content = line[2:].strip()
+            content = stripped[2:].strip()
             html_lines.append(f"<li>{content}</li>")
+
+        elif stripped == '':
+            if in_ul:
+                html_lines.append("</ul>")
+                in_ul = False
+            if in_ol:
+                html_lines.append("</ol>")
+                in_ol = False
+            if in_paragraph:
+                html_lines.append("<p>")
+                html_lines.extend(
+                    paragraph_lines[0:1] +
+                    [f"<br/>{l}" for l in paragraph_lines[1:]]
+                )
+                html_lines.append("</p>")
+                paragraph_lines = []
+                in_paragraph = False
 
         else:
             if in_ul:
@@ -58,10 +105,20 @@ def markdown_to_html(text):
                 html_lines.append("</ol>")
                 in_ol = False
 
+            in_paragraph = True
+            paragraph_lines.append(stripped)
+
     if in_ul:
         html_lines.append("</ul>")
     if in_ol:
         html_lines.append("</ol>")
+    if in_paragraph:
+        html_lines.append("<p>")
+        html_lines.extend(
+            paragraph_lines[0:1] +
+            [f"<br/>{l}" for l in paragraph_lines[1:]]
+        )
+        html_lines.append("</p>")
 
     return '\n'.join(html_lines)
 
