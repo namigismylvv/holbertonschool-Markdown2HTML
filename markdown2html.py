@@ -1,10 +1,16 @@
 #!/usr/bin/python3
 """
-Markdown to HTML converter — headings, unordered & ordered lists, paragraphs
+Markdown to HTML converter — bold,italic
 """
 
 import sys
 import os
+import re
+
+def parse_bold_italic(text):
+    text = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", text)
+    text = re.sub(r"__(.+?)__", r"<em>\1</em>", text)
+    return text
 
 def markdown_to_html(text):
     html_lines = []
@@ -24,6 +30,7 @@ def markdown_to_html(text):
                 html_lines.append("</ol>")
                 in_ol = False
             if in_paragraph:
+                paragraph_lines = [parse_bold_italic(l) for l in paragraph_lines]
                 html_lines.append("<p>")
                 html_lines.extend(
                     paragraph_lines[0:1] +
@@ -40,6 +47,7 @@ def markdown_to_html(text):
                 else:
                     break
             content = stripped[count:].strip()
+            content = parse_bold_italic(content)
             html_lines.append(f"<h{count}>{content}</h{count}>")
 
         elif stripped.startswith('- '):
@@ -47,6 +55,7 @@ def markdown_to_html(text):
                 html_lines.append("</ol>")
                 in_ol = False
             if in_paragraph:
+                paragraph_lines = [parse_bold_italic(l) for l in paragraph_lines]
                 html_lines.append("<p>")
                 html_lines.extend(
                     paragraph_lines[0:1] +
@@ -59,6 +68,7 @@ def markdown_to_html(text):
                 html_lines.append("<ul>")
                 in_ul = True
             content = stripped[2:].strip()
+            content = parse_bold_italic(content)
             html_lines.append(f"<li>{content}</li>")
 
         elif stripped.startswith('* '):
@@ -66,6 +76,7 @@ def markdown_to_html(text):
                 html_lines.append("</ul>")
                 in_ul = False
             if in_paragraph:
+                paragraph_lines = [parse_bold_italic(l) for l in paragraph_lines]
                 html_lines.append("<p>")
                 html_lines.extend(
                     paragraph_lines[0:1] +
@@ -78,6 +89,7 @@ def markdown_to_html(text):
                 html_lines.append("<ol>")
                 in_ol = True
             content = stripped[2:].strip()
+            content = parse_bold_italic(content)
             html_lines.append(f"<li>{content}</li>")
 
         elif stripped == '':
@@ -88,6 +100,7 @@ def markdown_to_html(text):
                 html_lines.append("</ol>")
                 in_ol = False
             if in_paragraph:
+                paragraph_lines = [parse_bold_italic(l) for l in paragraph_lines]
                 html_lines.append("<p>")
                 html_lines.extend(
                     paragraph_lines[0:1] +
@@ -113,6 +126,7 @@ def markdown_to_html(text):
     if in_ol:
         html_lines.append("</ol>")
     if in_paragraph:
+        paragraph_lines = [parse_bold_italic(l) for l in paragraph_lines]
         html_lines.append("<p>")
         html_lines.extend(
             paragraph_lines[0:1] +
@@ -148,3 +162,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
