@@ -21,7 +21,7 @@ def markdown_to_html(text):
             content = line[count:].strip()
             html_lines.append(f"<h{count}>{content}</h{count}>")
         else:
-            pass  # Yalnız başlıqları çevirmək tələb olunur
+            pass  
 
     return '\n'.join(html_lines)
 
